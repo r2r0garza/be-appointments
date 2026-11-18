@@ -1,28 +1,25 @@
-# Appointments Backend
+# Appointments API
 
-Backend for a small appointment-request app. A user submits their name, email, preferred date, and a short note; the backend validates the request and stores it, then reports whether it was accepted.
+A small Python standard-library HTTP API with SQLite persistence for appointment requests. Successful submission means received and stored; it does not mean an appointment is booked or confirmed.
 
-## Responsibilities
+## Run
 
-- Accept appointment requests from the frontend.
-- Validate required fields and reject invalid requests with useful, consistent feedback.
-- Store valid requests so accepted submissions are retained.
-- Return a clear success or failure response that the frontend can display.
+Requires Python 3.10+; there are no third-party dependencies.
 
-## Request data
+```sh
+python3 app.py
+```
 
-Each request contains a name, email address, preferred date, and short note. Validation rules should be explicit and shared with the frontend/API contract as the implementation takes shape. The app confirms that a request was accepted; that does not imply the appointment is booked or confirmed unless scheduling behavior is added later.
+The server listens on port `8000` by default. Set `PORT` to change it, `APPOINTMENTS_DB` to choose the SQLite file (defaults to `appointments.sqlite3` beside `app.py`), and `FRONTEND_ORIGIN` to configure the allowed frontend origin (defaults to `http://localhost:5173`).
 
-## Acceptance behavior
+## API
 
-A valid request is stored and receives an accepted response. A request with missing or invalid data is not stored and receives a response identifying the validation problem. Storage or server failures must not be reported as successful acceptance.
+`POST /api/appointments` accepts JSON with `name` (required, 1–100 characters after trimming), `email` (required, valid email syntax, at most 254 characters), `preferredDate` (required ISO `YYYY-MM-DD`), and `note` (required string, at most 500 characters; may be empty). The API independently validates all fields. Invalid JSON returns `400`, invalid data returns `422` with an `error` message, and storage failures return `500`. A successful durable insert returns `201` with `{ "id": 1, "status": "accepted", "message": "Your request was received." }`.
 
-## API and validation
+The frontend uses `/api/appointments` through the Vite proxy. Set `VITE_API_PROXY_TARGET` for a non-default backend host, or `VITE_API_BASE_URL` to have the browser call an absolute API base URL directly.
 
-`POST /api/appointments` accepts JSON with exactly `name`, `email`, `preferredDate`, and `note`. Name is required (1–100 characters), email must match a basic address format and be at most 254 characters, preferredDate must be a real ISO `YYYY-MM-DD` calendar date, and note may be empty but is limited to 500 characters. Invalid JSON/size returns 400; invalid fields return 422 with `{ "error": "..." }`. Successful storage returns 201 with `{ "id": 1, "status": "accepted" }`. A storage error returns 500; it is never acknowledged as accepted.
+## Test
 
-## Run and test
-
-The server uses only Python 3.10+ standard-library modules and SQLite. Run `python3 server.py` to start at `http://127.0.0.1:8000`. Set `PORT`, `HOST`, or `APPOINTMENTS_DB` to configure the listener or database file. SQLite creates the database and table automatically. Run tests from this directory with `python3 -m unittest -v`.
-
-In development, Vite proxies `/api` to `http://127.0.0.1:8000`; set `VITE_API_PROXY` to change the proxy target. For a separately hosted frontend, set `VITE_API_BASE_URL` at build time to the API origin.
+```sh
+python3 -m unittest -v
+```
