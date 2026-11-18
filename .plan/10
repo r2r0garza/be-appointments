@@ -1,0 +1,39 @@
+# Execution plan — ADO 10: Submit and store a valid appointment request
+
+## Source and scope
+
+Work item 10 (User Story, Active), Appointments project. Implement the server side of a thin end-to-end slice that accepts a visitor's name, email, preferred date, and short note, validates them, stores the request, and returns successful acceptance. Acceptance means received and stored only—not scheduled or confirmed. The item has three comments (“Comment from North Star”, “Test comment 2”, and “Test comment”); none adds requirements. This is a planning artifact, not authorization to modify the tracker.
+
+## Repository findings
+
+The backend repository currently contains only a README stating no backend source or runtime configuration exists and no framework has been chosen. The frontend is a React/TypeScript/Vite scaffold. Frontend integration plan: `fe-appointments/.plan/10`.
+
+## Assumptions to settle before implementation
+
+1. Choose the smallest maintainable framework and durable local store compatible with the workspace; capture setup, configuration, and run instructions in backend documentation.
+2. Agree the API route and JSON request/response schema with the frontend first. Keep the backend base URL configurable and configure CORS or the frontend development proxy as appropriate.
+3. Define shared field constraints: required non-empty name, syntactically valid email, valid preferred date, and a bounded short note. Server validation is authoritative; avoid adding scheduling/business rules not present in the story.
+4. Define response semantics: successful accepted response only after durable storage succeeds; clear client-usable validation response for invalid payload; non-success response for storage/server failure.
+
+## Execution sequence
+
+1. Select and document runtime, storage, API route/schema, configuration, and development/test workflow.
+2. Implement an endpoint that parses and validates all four submitted fields, rejects malformed/invalid requests without writing, and persists valid requests.
+3. Return a clear accepted result only after storage confirms success. Keep accepted semantics distinct from scheduling or confirmation; do not claim an appointment is booked.
+4. Add focused automated tests for valid persistence/response, invalid data with no write, and storage failure without false success.
+5. Verify using documented startup/test commands and an end-to-end valid/invalid submission from the frontend; confirm persistence and response behavior. Record unavailable prerequisites rather than treating them as passed.
+
+## Acceptance checklist
+
+- [ ] Endpoint receives the four frontend fields under the shared JSON contract.
+- [ ] Backend independently validates all submitted fields.
+- [ ] Invalid requests are rejected and not stored.
+- [ ] Valid requests are durably stored.
+- [ ] Success/accepted response is returned only after storage succeeds.
+- [ ] Storage/server errors do not return or imply acceptance.
+- [ ] API contract, configuration, persistence, and setup/run/test instructions are documented.
+- [ ] Automated tests and manual end-to-end cases pass.
+
+## Risks and dependencies
+
+No backend framework, runtime setup, or persistence layer exists yet; these are implementation decisions that must be verified in the target environment. Frontend integration depends on agreement of the route, payload, response, and local connectivity configuration. The user-facing confirmation must consistently describe receipt only.
